@@ -263,7 +263,7 @@ def create_heatmap(gdf):
         opacity=0.7,
         title="Mapa de accesibilidad de municipios. Haz clic en un municipio para ver más detalles",
         custom_data=[gdf_plot['NAMEUNIT'], gdf_plot['population'], gdf_plot['rent'], gdf_plot['maxtemp']],
-        labels={'weighted_score': 'Score'}
+        labels={'weighted_score': 'Puntuación'}
     )
     
     # Update hover template with correct data access
@@ -641,7 +641,7 @@ def show_single_municipality_details(municipality, images, concept_names, title=
         st.markdown(f"🌡️ **Temp. máx:** {municipality['maxtemp']}°C")
     
     # Accessibility scores
-    st.markdown("**Puntuaciones de Accesibilidad**")
+    st.markdown("**Puntuaciones de accesibilidad**")
     
     concepts = ['schools', 'pharmacies', 'hospitals', 'parks', 'cinemas', 'restaurants', 'supermarkets']
     
