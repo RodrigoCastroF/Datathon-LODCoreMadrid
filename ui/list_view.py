@@ -24,7 +24,7 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
         from core.data_loader import get_municipality_image
         img = get_municipality_image(muni["Nombre"])
         if img:
-            st.image(img, caption=muni["Nombre"], use_container_width=True)
+            st.image(img, width='stretch')
 
     with col2:
         st.markdown(f"<div class='municipality-name'>{muni['Nombre']}</div>", unsafe_allow_html=True)
@@ -50,6 +50,8 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+
+# ui/list_view.py - Replace render_list_view function
 
 def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.Image]]) -> None:
     """Render paginated list of municipalities.
@@ -83,3 +85,13 @@ def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.I
 
     for _, row in page_df.iterrows():
         render_municipality_card(row, images)
+        
+        # Show details inline if this municipality is selected
+        if ("selected_municipality" in st.session_state and 
+            st.session_state.get("details_origin") == "list" and
+            st.session_state["selected_municipality"]["codigo"] == row["codigo"]):
+            st.markdown("---")
+            from ui.details_view import render_details
+            render_details(st.session_state["selected_municipality"], images, scores_df)
+            st.markdown("---")
+
