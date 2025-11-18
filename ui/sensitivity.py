@@ -54,13 +54,13 @@ def render_sensitivity(scores_df: pd.DataFrame, weights: Dict[str, float], norm_
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown("**Pesos base**")
-            st.dataframe(scores_df[["Nombre", "weighted_score"]].head(10), hide_index=True, use_container_width=True)
+            st.dataframe(scores_df[["Nombre", "weighted_score"]].head(10), hide_index=True, width='stretch')
         with col2:
             st.markdown("**Pesos +10%**")
-            st.dataframe(scores_plus[["Nombre", "weighted_score"]].head(10), hide_index=True, use_container_width=True)
+            st.dataframe(scores_plus[["Nombre", "weighted_score"]].head(10), hide_index=True, width='stretch')
         with col3:
             st.markdown("**Pesos -10%**")
-            st.dataframe(scores_minus[["Nombre", "weighted_score"]].head(10), hide_index=True, use_container_width=True)
+            st.dataframe(scores_minus[["Nombre", "weighted_score"]].head(10), hide_index=True, width='stretch')
 
         top5_base = set(scores_df.head(5)["Nombre"].tolist())
         top5_plus = set(scores_plus.head(5)["Nombre"].tolist())
