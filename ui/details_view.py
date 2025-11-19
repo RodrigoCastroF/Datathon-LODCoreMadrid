@@ -46,7 +46,7 @@ def show_single_municipality_details(
         )
         st.markdown(f":material/group: | **Población:** {int(muni['IDE_PoblacionTotal']):,}")
         st.markdown(f":material/payments: | **Precio vivienda:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²")
-        st.markdown(f":material/schedule: | **Horas al mes en transporte:** {muni['AccessibilityHoursMonthly']:.1f}")
+        st.markdown(f":material/schedule: | **Horas a la semana en transporte:** {muni['AccessibilityHoursWeekly']:.1f}")
 
     # Legend
     st.markdown("#### **Desglose por criterio**")
@@ -74,8 +74,8 @@ def show_single_municipality_details(
         contrib = float(muni[contrib_col])
         
         # Get raw value and format
-        if crit == "AccessibilityHoursMonthly":
-            raw_value = f"{muni['AccessibilityHoursMonthly']:.1f} h/mes"
+        if crit == "AccessibilityHoursWeekly":
+            raw_value = f"{muni['AccessibilityHoursWeekly']:.1f} h/semana"
         elif crit == "HousePriceSqm":
             raw_value = f"{muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²"
         elif crit in BENEFIT_COLUMNS:

@@ -21,11 +21,10 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         
     Returns:
         Dictionary with user preferences:
-            - w_car, w_sport, w_hospital: float weights
+            - w_car, w_sport, w_hospital: float frequencies
             - edu_has_kids: bool
             - edu_variant: Optional['public'|'pubpriv']
             - edu_levels: List[str]
-            - edu_trade: float
             - pop_min, pop_max: int
             - ranks: List[float]
     """
@@ -52,7 +51,6 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
 
         edu_variant: Optional[Literal["public", "pubpriv"]] = None
         edu_levels: List[str] = []
-        edu_trade: float = 0.0
 
         if edu_has_kids:
             school_type = st.radio(
@@ -66,15 +64,6 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
                 "¿En qué etapas tienes hij@s?",
                 options=EDU_LEVEL_OPTIONS,
                 help="Si eliges varias, las ponderamos igual.",
-            )
-
-            edu_trade = st.slider(
-                "¿Qué priorizas en educación?",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                step=0.05,
-                help="(0) ← Calidad del centro educativo | Cercanía al hogar → (1)",
             )
 
         # Lifestyle - Sports
@@ -135,7 +124,6 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         "edu_has_kids": edu_has_kids,
         "edu_variant": edu_variant,
         "edu_levels": edu_levels,
-        "edu_trade": edu_trade,
         "pop_min": pop_min,
         "pop_max": pop_max,
         "ranks": ranks,

@@ -57,7 +57,7 @@ def render_municipality_comparison_card(muni: pd.Series, images: Dict[str, Optio
         # Key metrics
         st.markdown(f":material/group: **Población:** {int(muni['IDE_PoblacionTotal']):,}")
         st.markdown(f":material/payments: **Precio:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²")
-        st.markdown(f":material/schedule: **Transporte:** {muni['AccessibilityHoursMonthly']:.1f} h/mes")
+        st.markdown(f":material/schedule: **Transporte:** {muni['AccessibilityHoursWeekly']:.1f} h/semana")
     
     st.markdown("</div>", unsafe_allow_html=True)
 

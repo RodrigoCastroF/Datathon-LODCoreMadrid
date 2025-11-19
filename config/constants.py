@@ -5,7 +5,7 @@ from typing import Dict, List, Literal
 
 # Criteria definitions
 CRITERIA: List[str] = [
-    "AccessibilityHoursMonthly",
+    "AccessibilityHoursWeekly",
     "EducationQuality",
     "AirQuality",
     "BuildingQuality",
@@ -15,7 +15,7 @@ CRITERIA: List[str] = [
 ]
 
 CRITERIA_LABELS: Dict[str, str] = {
-    "AccessibilityHoursMonthly": "Ahorro de tiempo en desplazamientos",
+    "AccessibilityHoursWeekly": "Ahorro de tiempo en desplazamientos",
     "EducationQuality": "Calidad de la educación",
     "AirQuality": "Calidad del aire y del entorno",
     "BuildingQuality": "Atractividad de las viviendas",
@@ -25,7 +25,7 @@ CRITERIA_LABELS: Dict[str, str] = {
 }
 
 CRITERIA_ICONS: Dict[str, str] = {
-    "AccessibilityHoursMonthly": ":material/schedule:",
+    "AccessibilityHoursWeekly": ":material/schedule:",
     "EducationQuality": ":material/school:",
     "AirQuality": ":material/air:",
     "BuildingQuality": ":material/home:",
@@ -35,7 +35,7 @@ CRITERIA_ICONS: Dict[str, str] = {
 }
 
 CRITERIA_TOOLTIPS: Dict[str, str] = {
-    "AccessibilityHoursMonthly": "Tiempo mensual estimado en desplazamientos a servicios esenciales (supermercados, salud, educación, etc.).",
+    "AccessibilityHoursWeekly": "Tiempo semanal estimado en desplazamientos a servicios esenciales (supermercados, salud, educación, etc.).",
     "EducationQuality": "Calidad de los centros educativos basada en indicadores estadísticos de la Comunidad de Madrid.",
     "AirQuality": "Calidad del aire y entorno natural medida por estaciones de monitoreo ambiental.",
     "BuildingQuality": "Atractividad y estado de conservación del parque inmobiliario del municipio.",
@@ -121,19 +121,19 @@ CAR_FREQ_LABELS: List[str] = [
 ]
 
 CAR_FREQ_TO_WCAR: Dict[str, float] = {
-    CAR_FREQ_LABELS[0]: 0.5 / 7.0,
-    CAR_FREQ_LABELS[1]: 2.5 / 7.0,
-    CAR_FREQ_LABELS[2]: 4.5 / 7.0,
-    CAR_FREQ_LABELS[3]: 6.5 / 7.0,
+    CAR_FREQ_LABELS[0]: 0.5,
+    CAR_FREQ_LABELS[1]: 2.5,
+    CAR_FREQ_LABELS[2]: 4.5,
+    CAR_FREQ_LABELS[3]: 6.5,
 }
 
 SPORT_FREQ_LABELS: List[str] = CAR_FREQ_LABELS
 
 SPORT_FREQ_TO_W: Dict[str, float] = {
-    SPORT_FREQ_LABELS[0]: 0.5 / 7.0,
-    SPORT_FREQ_LABELS[1]: 2.5 / 7.0,
-    SPORT_FREQ_LABELS[2]: 4.5 / 7.0,
-    SPORT_FREQ_LABELS[3]: 6.5 / 7.0,
+    SPORT_FREQ_LABELS[0]: 0.5,
+    SPORT_FREQ_LABELS[1]: 2.5,
+    SPORT_FREQ_LABELS[2]: 4.5,
+    SPORT_FREQ_LABELS[3]: 6.5,
 }
 
 HOSPITAL_USE_LABELS: List[str] = [
@@ -144,10 +144,10 @@ HOSPITAL_USE_LABELS: List[str] = [
 ]
 
 HOSPITAL_USE_TO_W: Dict[str, float] = {
-    "Solo para emergencias": 0.2,
-    "Revisiones regulares": 0.6,
-    "Acompañar personas de riesgo": 0.8,
-    "Enfermedad recurrente": 1.0,
+    "Solo para emergencias": 0.05,
+    "Revisiones regulares": 0.25,
+    "Acompañar personas de riesgo": 1.0,
+    "Enfermedad recurrente": 2.0,
 }
 
 EDU_LEVEL_OPTIONS: List[str] = ["Preinfantil", "Infantil", "Primaria", "Secundaria"]

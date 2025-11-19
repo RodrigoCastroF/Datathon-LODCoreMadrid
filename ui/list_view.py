@@ -36,7 +36,7 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
             (
                 f":material/group: **Población:** {int(muni['IDE_PoblacionTotal']):,}<br>"
                 f":material/payments: **Precio vivienda:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²<br>"
-                f":material/schedule: **Horas al mes en transporte:** {muni['AccessibilityHoursMonthly']:.1f}"
+                f":material/schedule: **Horas a la semana en transporte:** {muni['AccessibilityHoursWeekly']:.1f}"
             ),
             unsafe_allow_html=True,
         )

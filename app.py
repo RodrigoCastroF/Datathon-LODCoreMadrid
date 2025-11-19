@@ -10,7 +10,7 @@ from config.styles import apply_styles
 from config.constants import CRITERIA, BENEFIT_COLUMNS, COST_COLUMNS
 from core.data_loader import load_data, load_placeholder_images
 from core.accessibility import compute_accessibility_hours
-from core.ahp import preferences_to_weights, preferences_to_matrix, compute_cr
+from core.ahp import preferences_to_weights
 from core.scoring import normalize_criteria, compute_scores, equal_weights
 from ui.questionnaire import render_questionnaire
 from ui.map_view import render_map_view
@@ -67,16 +67,15 @@ def main() -> None:
     # Compute accessibility
     acc_df = compute_accessibility_hours(
         df=df,
-        w_car=prefs["w_car"],
-        w_sport=prefs["w_sport"],
-        w_hospital=prefs["w_hospital"],
+        freq_car=prefs["w_car"],
+        freq_sport=prefs["w_sport"],
+        freq_hospital=prefs["w_hospital"],
         edu_has_kids=prefs["edu_has_kids"],
         edu_variant=prefs["edu_variant"],
         edu_levels=prefs["edu_levels"],
-        edu_acc_weight=prefs["edu_trade"],
     )
     
-    df_scored = df.merge(acc_df[["codigo", "AccessibilityHoursMonthly"]], on="codigo", how="left")
+    df_scored = df.merge(acc_df[["codigo", "AccessibilityHoursWeekly"]], on="codigo", how="left")
     
     # Normalize criteria
     norm_df = normalize_criteria(df_scored, BENEFIT_COLUMNS, COST_COLUMNS)
@@ -86,17 +85,6 @@ def main() -> None:
         inverted_ranks = [11 - r for r in prefs["ranks"]]
         w_vec = preferences_to_weights(np.array(inverted_ranks, dtype=float), mode="ranking")
         weights = {CRITERIA[i]: float(w_vec[i]) for i in range(len(CRITERIA))}
-        
-        A = preferences_to_matrix(np.array(inverted_ranks, dtype=float), "ranking")
-        cr = compute_cr(A)
-        
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("**:material/data_check:** | Calidad de pesos")
-        if cr < 0.10:
-            st.sidebar.success(f":material/check_circle: Consistencia: {cr:.3f} (buena)")
-        else:
-            st.sidebar.warning(f":material/warning: Consistencia: {cr:.3f} (ajustado automáticamente)")
-            st.sidebar.caption("Tus preferencias tenían pequeñas inconsistencias. Los pesos se han corregido matemáticamente.")
     except Exception as e:
         st.sidebar.error(f":material/error: Error: {e}")
         st.sidebar.info("Usando pesos iguales como respaldo.")
@@ -109,7 +97,7 @@ def main() -> None:
     # Prepare map data
     with st.spinner("Preparando mapa..."):
         gdf = gdf_raw.merge(
-            scores_df[["codigo", "Nombre", "Score", "weighted_score", "AccessibilityHoursMonthly",
+            scores_df[["codigo", "Nombre", "Score", "weighted_score", "AccessibilityHoursWeekly",
                       "IDE_PoblacionTotal", "IDE_PrecioPorMetroCuadrado"] +
                      [c for c in scores_df.columns if c.startswith("NORM_") or c.startswith("CONTRIB_")]],
             on=["Nombre"],

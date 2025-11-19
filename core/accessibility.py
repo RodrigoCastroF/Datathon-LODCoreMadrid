@@ -1,5 +1,5 @@
 # core/accessibility.py
-"""Accessibility computation: monthly commute hours from user preferences."""
+"""Accessibility computation: weekly commute hours from user preferences."""
 
 import numpy as np
 import pandas as pd
@@ -12,79 +12,86 @@ from config.constants import ACC_COLUMNS, edu_level_to_key
 @st.cache_data
 def compute_accessibility_hours(
     df: pd.DataFrame,
-    w_car: float,
-    w_sport: float,
-    w_hospital: float,
+    freq_car: float,
+    freq_sport: float,
+    freq_hospital: float,
     edu_has_kids: bool,
     edu_variant: Optional[Literal["public", "pubpriv"]],
     edu_levels: List[str],
-    edu_acc_weight: float,
 ) -> pd.DataFrame:
-    """Compute monthly accessibility hours per municipality.
+    """Compute weekly accessibility hours per municipality.
     
-    Aggregates round-trip travel time across essential services weighted by
-    user preferences and visit frequency.
+    Aggregates round-trip travel time across essential services based on
+    user-specified visit frequencies.
     
     Args:
         df: Municipality dataset
-        w_car: Car usage weight [0,1] (0=only PT, 1=only car)
-        w_sport: Sports frequency weight [0,1]
-        w_hospital: Hospital usage weight [0,1]
+        freq_car: Car usage frequency (days per week) for mode choice weighting
+        freq_sport: Sports facility visit frequency (times per week)
+        freq_hospital: Hospital/health center visit frequency (times per week)
         edu_has_kids: Whether to include education travel
         edu_variant: School type ('public' or 'pubpriv')
         edu_levels: Education stages to include
-        edu_acc_weight: Education accessibility weight [0,1]
         
     Returns:
-        DataFrame with AccessibilityHoursMonthly column
+        DataFrame with AccessibilityHoursWeekly column (actually weekly hours)
     """
     out = df[["codigo", "Nombre"]].copy()
     total = np.zeros(len(df), dtype=float)
 
+    # Compute car usage weight for transportation mode blending
+    w_car = freq_car / 7.0  # Convert days per week to proportion
+
     def blend_minutes(col_car: str, col_pt: str) -> np.ndarray:
+        """Blend car and public transport times based on car usage."""
         mc = df[col_car].astype(float)
         mp = df[col_pt].astype(float) if col_pt in df.columns else mc
         return w_car * mc + (1.0 - w_car) * mp
 
-    def add_hours(key: str, minutes_one_way: np.ndarray, visits_per_month: float, weight: float = 1.0) -> None:
+    def add_hours(key: str, minutes_one_way: np.ndarray, visits_per_week: float) -> None:
+        """Add weekly commute hours for a service."""
         nonlocal total
-        hours = weight * visits_per_month * (2.0 * minutes_one_way) / 60.0
+        hours = visits_per_week * (2.0 * minutes_one_way) / 60.0
         out[f"hrs_{key}"] = hours
         total += hours
 
-    # Supermarkets (8 visits/month, essential)
+    # Supermarkets (assume 2 visits/week, essential)
     mins_super = blend_minutes(
         ACC_COLUMNS["supermarket"]["coche"],
         ACC_COLUMNS["supermarket"]["TransportePublico"],
     )
-    add_hours("supermarket", mins_super, 8.0, 1.0)
+    add_hours("supermarket", mins_super, 2.0)
 
-    # Gas stations (2 visits/month, car-dependent)
-    mins_gas = df[ACC_COLUMNS["gas"]["coche"]].astype(float)
-    add_hours("gas", mins_gas, 2.0, max(0.0, min(1.0, w_car)))
+    # Gas stations (scale with car usage: ~0.5 visits/week for frequent drivers)
+    if freq_car > 0:
+        mins_gas = df[ACC_COLUMNS["gas"]["coche"]].astype(float)
+        gas_visits_per_week = min(freq_car / 10.0, 1.0)  # Scale with car use
+        add_hours("gas", mins_gas, gas_visits_per_week)
 
-    # Sports facilities (4 visits/month)
-    mins_sport = blend_minutes(
-        ACC_COLUMNS["sport"]["coche"],
-        ACC_COLUMNS["sport"]["TransportePublico"],
-    )
-    add_hours("sport", mins_sport, 4.0, max(0.0, min(1.0, w_sport)))
+    # Sports facilities (user-specified frequency)
+    if freq_sport > 0:
+        mins_sport = blend_minutes(
+            ACC_COLUMNS["sport"]["coche"],
+            ACC_COLUMNS["sport"]["TransportePublico"],
+        )
+        add_hours("sport", mins_sport, freq_sport)
 
-    # Healthcare: GP (0.25/month) + Pharmacy (1/month)
-    mins_gp = blend_minutes(
-        ACC_COLUMNS["gp"]["coche"],
-        ACC_COLUMNS["gp"]["TransportePublico"],
-    )
-    add_hours("gp", mins_gp, 0.25, max(0.0, min(1.0, w_hospital)))
+    # Healthcare: split frequency between GP (20%) and Pharmacy (80%)
+    if freq_hospital > 0:
+        mins_gp = blend_minutes(
+            ACC_COLUMNS["gp"]["coche"],
+            ACC_COLUMNS["gp"]["TransportePublico"],
+        )
+        add_hours("gp", mins_gp, freq_hospital * 0.2)
 
-    mins_pharm = blend_minutes(
-        ACC_COLUMNS["pharmacy"]["coche"],
-        ACC_COLUMNS["pharmacy"]["TransportePublico"],
-    )
-    add_hours("pharmacy", mins_pharm, 1.0, max(0.0, min(1.0, w_hospital)))
+        mins_pharm = blend_minutes(
+            ACC_COLUMNS["pharmacy"]["coche"],
+            ACC_COLUMNS["pharmacy"]["TransportePublico"],
+        )
+        add_hours("pharmacy", mins_pharm, freq_hospital * 0.8)
 
-    # Education (2 visits/month per level)
-    if edu_has_kids and edu_variant in ("public", "pubpriv") and edu_levels and edu_acc_weight > 0.0:
+    # Education (5 visits/week for school-age children on weekdays)
+    if edu_has_kids and edu_variant in ("public", "pubpriv") and edu_levels:
         per_level = 1.0 / len(edu_levels)
         for level in edu_levels:
             svc_key = edu_level_to_key(level, edu_variant)
@@ -93,9 +100,8 @@ def compute_accessibility_hours(
             add_hours(
                 f"edu_{level.lower()}",
                 mins,
-                2.0,
-                per_level * edu_acc_weight,
+                5.0 * per_level,  # 5 school days per week, split evenly across levels
             )
 
-    out["AccessibilityHoursMonthly"] = total
+    out["AccessibilityHoursWeekly"] = total
     return out

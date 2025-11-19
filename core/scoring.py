@@ -10,7 +10,7 @@ def normalize_criteria(
     df: pd.DataFrame,
     benefit_cols: Dict[str, str],
     cost_cols: Dict[str, str],
-    accessibility_col: str = "AccessibilityHoursMonthly",
+    accessibility_col: str = "AccessibilityHoursWeekly",
 ) -> pd.DataFrame:
     """Normalize all criteria to [0,1] with higher=better.
     
@@ -41,7 +41,7 @@ def normalize_criteria(
 
     xa = out[accessibility_col].astype(float)
     arng = xa.max() - xa.min()
-    out["NORM_AccessibilityHoursMonthly"] = 1.0 - (xa - xa.min()) / (arng if arng != 0 else 1.0)
+    out["NORM_AccessibilityHoursWeekly"] = 1.0 - (xa - xa.min()) / (arng if arng != 0 else 1.0)
 
     return out
 
