@@ -29,6 +29,59 @@ CSS_STYLES = """
     }
 }
 
+/* ===== RESPONSIVE LAYOUT ===== */
+
+/* Mobile: Single column, larger touch targets */
+@media (max-width: 767px) {
+    .main-header {
+        font-size: 1.8rem !important;
+    }
+    
+    .municipality-name {
+        font-size: 1.2rem !important;
+    }
+    
+    .score-badge {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+    
+    /* Force single column for municipality cards */
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    
+    /* Larger buttons for touch */
+    .stButton > button {
+        padding: 0.6rem 1.2rem !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Stack comparison cards vertically */
+    .comparison-header {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .main-header {
+        font-size: 2rem !important;
+    }
+    
+    .municipality-name {
+        font-size: 1.3rem !important;
+    }
+    
+    /* 2-column layout for comparison view */
+    [data-testid="column"]:nth-child(n+3) {
+        margin-top: 1rem;
+    }
+}
+
+/* Desktop: Full layout (>1024px) - default styles apply */
+
 .main-header {
     font-size: 2.5rem;
     font-weight: 800;
@@ -47,25 +100,6 @@ CSS_STYLES = """
     margin-bottom: 1.5rem;
     opacity: 0.8;
 }
-
-
-# /* Municipality cards - theme aware */
-# .municipality-card {
-#     background: linear-gradient(135deg, #568EE2 0%, #6FB5BA 100%);
-#     padding: 0.06rem;
-#     border-radius: 2px;
-#     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
-#     margin: 0.5rem 0;
-#     border-left: 3px solid #3D517B;
-#     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-#     min-height: 2px;
-#     max-height: 3px;
-# }
-# .municipality-card:hover {
-#     transform: translateY(-2px);
-#     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-# }
-
 
 .score-badge {
     background: linear-gradient(90deg, var(--color-primary), var(--color-teal));
@@ -222,7 +256,6 @@ CSS_STYLES = """
     fill: #F9FAFB !important;
 }
 
-
 /* Sidebar slider */
 [data-testid="stSidebar"] [data-baseweb="slider"] {
     color: #F9FAFB !important;
@@ -252,6 +285,56 @@ CSS_STYLES = """
     border-radius: 10px;
     border: 1px solid rgba(86, 142, 226, 0.3);
 }
+
+/* Back to top button */
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-teal)) !important;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+    border-bottom: none !important;
+    opacity: 0;
+    pointer-events: none;
+    animation: fadeIn 0.3s ease-in-out 3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.back-to-top:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    .back-to-top {
+        bottom: 1rem;
+        right: 1rem;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+
 </style>
 """
 
@@ -260,7 +343,7 @@ def apply_styles() -> None:
     """Apply page configuration and custom CSS styles."""
     st.set_page_config(
         page_title="Living on the Edge",
-        page_icon="🏘️",
+        page_icon=":material/home:",
         layout="wide",
         initial_sidebar_state="expanded",
     )

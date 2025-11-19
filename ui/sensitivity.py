@@ -37,7 +37,7 @@ def render_sensitivity(scores_df: pd.DataFrame, weights: Dict[str, float], norm_
     if len(scores_df) == 0:
         return
 
-    with st.expander("🔬 Análisis de sensibilidad", expanded=False):
+    with st.expander(":material/science: | Análisis de sensibilidad", expanded=False):
         st.markdown("**¿Qué pasa si cambio ligeramente mis prioridades?**")
         st.caption("Variamos los 3 criterios más importantes ±10% para ver si el ranking cambia mucho.")
 
@@ -69,7 +69,7 @@ def render_sensitivity(scores_df: pd.DataFrame, weights: Dict[str, float], norm_
         overlap_plus = len(top5_base & top5_plus)
         overlap_minus = len(top5_base & top5_minus)
 
-        st.markdown("---\n**📊 Estabilidad del Top-5:**")
+        st.markdown("---\n**:material/analytics: Estabilidad del Top-5:**")
         col_a, col_b = st.columns(2)
         with col_a:
             st.metric("Coincidencia con +10%", f"{overlap_plus}/5", delta="Estable" if overlap_plus >= 4 else "Variable")
@@ -77,8 +77,8 @@ def render_sensitivity(scores_df: pd.DataFrame, weights: Dict[str, float], norm_
             st.metric("Coincidencia con -10%", f"{overlap_minus}/5", delta="Estable" if overlap_minus >= 4 else "Variable")
 
         if overlap_plus >= 4 and overlap_minus >= 4:
-            st.success("✅ Ranking muy estable. Tus preferencias producen resultados robustos.")
+            st.success(":material/check: Ranking muy estable. Tus preferencias producen resultados robustos.")
         elif overlap_plus >= 3 and overlap_minus >= 3:
-            st.info("ℹ️ Ranking moderadamente estable. Pequeños cambios afectan algo el orden.")
+            st.info(":material/info: Ranking moderadamente estable. Pequeños cambios afectan algo el orden.")
         else:
-            st.warning("⚠️ Ranking sensible. Considera ajustar tus prioridades para mayor claridad.")
+            st.warning(":material/warning: Ranking sensible. Considera ajustar tus prioridades para mayor claridad.")

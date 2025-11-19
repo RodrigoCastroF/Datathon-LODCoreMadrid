@@ -27,7 +27,7 @@ def main() -> None:
     
     # Handle view switching state
     if "view_selector" not in st.session_state:
-        st.session_state["view_selector"] = "🗺️ Mapa de municipios"
+        st.session_state["view_selector"] = ":material/map: Mapa de municipios"
     
     if st.session_state.get("switch_view_to"):
         st.session_state["view_selector"] = st.session_state["switch_view_to"]
@@ -39,7 +39,7 @@ def main() -> None:
     
     # Clear selected municipality when switching views
     if "previous_view" not in st.session_state:
-        st.session_state["previous_view"] = "🗺️ Mapa de municipios"
+        st.session_state["previous_view"] = ":material/map: Mapa de municipios"
 
     # Header
     st.markdown('<h1 class="main-header">🏘️ Living on the Edge</h1>', unsafe_allow_html=True)
@@ -47,7 +47,10 @@ def main() -> None:
         '<p class="tagline">Encuentra tu municipio ideal en la Comunidad de Madrid según tu estilo de vida, tu familia y tus prioridades.</p>',
         unsafe_allow_html=True,
     )
-    
+
+    # Add anchor for back-to-top
+    st.markdown('<div id="top"></div>', unsafe_allow_html=True)
+
     # Load data
     df_raw, gdf_raw = load_data()
     images = load_placeholder_images()
@@ -88,14 +91,14 @@ def main() -> None:
         cr = compute_cr(A)
         
         st.sidebar.markdown("---")
-        st.sidebar.subheader("📊 Calidad de pesos")
+        st.sidebar.subheader("**:material/data_check:** | Calidad de pesos")
         if cr < 0.10:
-            st.sidebar.success(f"✅ Consistencia: {cr:.3f} (buena)")
+            st.sidebar.success(f":material/check_circle: Consistencia: {cr:.3f} (buena)")
         else:
-            st.sidebar.warning(f"⚠️ Consistencia: {cr:.3f} (ajustado automáticamente)")
+            st.sidebar.warning(f":material/warning: Consistencia: {cr:.3f} (ajustado automáticamente)")
             st.sidebar.caption("Tus preferencias tenían pequeñas inconsistencias. Los pesos se han corregido matemáticamente.")
     except Exception as e:
-        st.sidebar.error(f"❌ Error: {e}")
+        st.sidebar.error(f":material/error: Error: {e}")
         st.sidebar.info("Usando pesos iguales como respaldo.")
         weights = equal_weights(CRITERIA)
     
@@ -116,7 +119,9 @@ def main() -> None:
     # Main view selector
     view_option = st.radio(
         "Selecciona vista:",
-        ["🗺️ Mapa de municipios", "📋 Lista de municipios", "⚖️ Comparación"],
+        [":material/map: Mapa de municipios", 
+         ":material/list: Lista de municipios", 
+         ":material/balance: Comparación"],
         horizontal=True,
         key="view_selector",
     )
@@ -130,23 +135,30 @@ def main() -> None:
     # CSV download
     st.download_button(
         label="📥 Descargar resultados (CSV)",
-        data=scores_df.to_csv(index=False).encode("utf-8"),
+        data=scores_df.to_csv(index=False).encode("utf-8-sig"),
         file_name="lodcore_municipios.csv",
         mime="text/csv",
         help="Descarga todos los municipios con sus puntuaciones y detalles"
     )
     
     # Render selected view
-    if view_option == "🗺️ Mapa de municipios":
+    if view_option == ":material/map: Mapa de municipios":
         render_map_view(gdf, scores_df)
-    elif view_option == "📋 Lista de municipios":
+    elif view_option == ":material/list: Lista de municipios":
         render_list_view(scores_df, images)
     else:
         render_comparison_view(scores_df, images)
     
-    
+
     # Sensitivity analysis
+    st.markdown('<hr style="margin: -0.25rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
     render_sensitivity(scores_df, weights, norm_df, compute_scores)
+
+    # Back to top button
+    st.markdown(
+        '<a href="#top" class="back-to-top" title="Volver arriba">:material/keyboard_arrow_up:</a>',
+        unsafe_allow_html=True
+    )
 
 
 if __name__ == "__main__":

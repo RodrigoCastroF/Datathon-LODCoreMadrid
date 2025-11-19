@@ -21,7 +21,6 @@ def render_municipality_comparison_card(muni: pd.Series, images: Dict[str, Optio
     """
     st.markdown('<div class="municipality-card">', unsafe_allow_html=True)
     
-
     # Remove button in top-right
     col_content, col_remove = st.columns([5, 1])
     with col_remove:
@@ -34,14 +33,12 @@ def render_municipality_comparison_card(muni: pd.Series, images: Dict[str, Optio
             }
             </style>
         """, unsafe_allow_html=True)
-        if st.button("❌", key=f"remove_comparison_{index}_{muni['codigo']}", help="Quitar de comparación"):
+        if st.button("✕", key=f"remove_comparison_{index}_{muni['codigo']}", help="Quitar de comparación"):
             comparison_list = st.session_state.get("comparison_municipalities", [])
             if muni["codigo"] in comparison_list:
                 comparison_list.remove(muni["codigo"])
                 st.session_state["comparison_municipalities"] = comparison_list
                 st.rerun()
-
-
     
     with col_content:
         # Image
@@ -58,9 +55,9 @@ def render_municipality_comparison_card(muni: pd.Series, images: Dict[str, Optio
         )
         
         # Key metrics
-        st.markdown(f"👥 **Población:** {int(muni['IDE_PoblacionTotal']):,}")
-        st.markdown(f"💰 **Precio:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²")
-        st.markdown(f"⌛ **Transporte:** {muni['AccessibilityHoursMonthly']:.1f} h/mes")
+        st.markdown(f":material/group: **Población:** {int(muni['IDE_PoblacionTotal']):,}")
+        st.markdown(f":material/payments: **Precio:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²")
+        st.markdown(f":material/schedule: **Transporte:** {muni['AccessibilityHoursMonthly']:.1f} h/mes")
     
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -152,7 +149,7 @@ def render_comparison_view(scores_df: pd.DataFrame, images: Dict[str, Optional[I
     
     comparison_codes = st.session_state["comparison_municipalities"]
     
-    st.markdown("### ⚖️ Comparación de municipios")
+    st.markdown("### :material/balance: Comparación de municipios")
     st.markdown("Compara hasta 4 municipios lado a lado y visualiza sus fortalezas en el gráfico radar.")
     
     # Get municipality data
@@ -166,7 +163,7 @@ def render_comparison_view(scores_df: pd.DataFrame, images: Dict[str, Optional[I
     num_munis = len(comparison_munis)
     
     if num_munis == 0:
-        st.info("👆 Selecciona municipios para comenzar la comparación (usa el buscador abajo o haz clic en el mapa)")
+        st.info(":material/touch_app: Selecciona municipios para comenzar la comparación (usa el buscador abajo o haz clic en el mapa)")
     
     # Dynamic columns
     if num_munis < 4:
@@ -182,7 +179,7 @@ def render_comparison_view(scores_df: pd.DataFrame, images: Dict[str, Optional[I
     # Add municipality button
     if num_munis < 4:
         with cols[num_munis]:
-            st.markdown("### ➕ Añadir municipio")
+            st.markdown("### :material/add_circle: Añadir municipio")
             
             # Searchable selectbox
             available_munis = scores_df[~scores_df["codigo"].isin(comparison_codes)]
@@ -206,8 +203,8 @@ def render_comparison_view(scores_df: pd.DataFrame, images: Dict[str, Optional[I
     # Radar chart
     if num_munis > 0:
         st.markdown("---")
-        st.markdown("### 📊 Comparación visual por criterios")
-        st.caption("💡 Pasa el ratón sobre el gráfico para ver valores detallados. Haz clic en la leyenda para resaltar un municipio.")
+        st.markdown("### :material/analytics: Comparación visual por criterios")
+        st.caption(":material/info: Pasa el ratón sobre el gráfico para ver valores detallados. Haz clic en la leyenda para resaltar un municipio.")
         
         fig = create_radar_chart(comparison_munis)
         st.plotly_chart(fig, width='stretch', config={'displayModeBar': False})

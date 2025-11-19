@@ -25,13 +25,23 @@ CRITERIA_LABELS: Dict[str, str] = {
 }
 
 CRITERIA_ICONS: Dict[str, str] = {
-    "AccessibilityHoursMonthly": "⌛",
-    "EducationQuality": "🎓",
-    "AirQuality": "🌬️",
-    "BuildingQuality": "🏠",
-    "TransportInfraQuality": "🚆",
-    "EconomicDynamism": "💼",
-    "HousePriceSqm": "💰",
+    "AccessibilityHoursMonthly": ":material/schedule:",
+    "EducationQuality": ":material/school:",
+    "AirQuality": ":material/air:",
+    "BuildingQuality": ":material/home:",
+    "TransportInfraQuality": ":material/train:",
+    "EconomicDynamism": ":material/work:",
+    "HousePriceSqm": ":material/payments:",
+}
+
+CRITERIA_TOOLTIPS: Dict[str, str] = {
+    "AccessibilityHoursMonthly": "Tiempo mensual estimado en desplazamientos a servicios esenciales (supermercados, salud, educación, etc.).",
+    "EducationQuality": "Calidad de los centros educativos basada en indicadores estadísticos de la Comunidad de Madrid.",
+    "AirQuality": "Calidad del aire y entorno natural medida por estaciones de monitoreo ambiental.",
+    "BuildingQuality": "Atractividad y estado de conservación del parque inmobiliario del municipio.",
+    "TransportInfraQuality": "Disponibilidad y calidad de infraestructuras de transporte público y carreteras.",
+    "EconomicDynamism": "Actividad económica, empleo y tejido empresarial del municipio.",
+    "HousePriceSqm": "Precio medio de vivienda por metro cuadrado según datos de Idealista. Menor es mejor.",
 }
 
 # Dataset column mappings

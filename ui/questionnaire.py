@@ -30,10 +30,10 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
             - ranks: List[float]
     """
     with st.sidebar:
-        st.header("Tu perfil y prioridades")
+        st.header(":material/account_box: | Tu perfil y prioridades")
 
         # Mobility
-        st.subheader("Movilidad - coche")
+        st.subheader(":material/directions_car: | Movilidad - Coche")
         car_use = st.selectbox(
             "¿Con qué frecuencia usarías el coche?",
             options=CAR_FREQ_LABELS,
@@ -42,7 +42,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         w_car = CAR_FREQ_TO_WCAR[car_use]
 
         # Family - Education
-        st.subheader("Familia - educación")
+        st.subheader(":material/school: | Familia - Educación")
         has_kids_ans = st.radio(
             "¿Tienes hij@s pequeñ@s?",
             options=["No", "Sí"],
@@ -69,16 +69,16 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
             )
 
             edu_trade = st.slider(
-                "¿Qué te importa más en educación?",
+                "¿Qué priorizas en educación?",
                 min_value=0.0,
                 max_value=1.0,
                 value=0.5,
                 step=0.05,
-                help="0 = solo calidad educativa (ATR), 1 = solo accesibilidad (ACC).",
+                help="(0) ← Calidad del centro educativo | Cercanía al hogar → (1)",
             )
 
         # Lifestyle - Sports
-        st.subheader("Estilo de vida - deporte")
+        st.subheader(":material/sports_and_outdoors: | Estilo de vida - Deporte")
         sport_use = st.selectbox(
             "¿Con qué frecuencia harías deporte?",
             options=SPORT_FREQ_LABELS,
@@ -87,7 +87,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         w_sport = SPORT_FREQ_TO_W[sport_use]
 
         # Health
-        st.subheader("Salud - hospitales y farmacias")
+        st.subheader(":material/local_hospital: | Salud - Hospitales y farmacias")
         hosp_use = st.selectbox(
             "¿Qué uso haces de hospitales/centros de salud?",
             options=HOSPITAL_USE_LABELS,
@@ -96,7 +96,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         w_hospital = HOSPITAL_USE_TO_W[hosp_use]
 
         # Population
-        st.subheader("Tamaño del municipio")
+        st.subheader(":material/location_city: | Tamaño del municipio")
         if "IDE_PoblacionTotal" in df_raw.columns:
             min_pop_data = int(df_raw["IDE_PoblacionTotal"].min())
             max_pop_data = int(df_raw["IDE_PoblacionTotal"].max())
@@ -104,7 +104,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
             min_pop_data, max_pop_data = 0, 50000
 
         pop_min, pop_max = st.slider(
-            "Rango de población del municipio",
+            "Rango de población del municipio:",
             min_value=min_pop_data,
             max_value=max_pop_data,
             value=(min_pop_data, min(50000, max_pop_data)),
@@ -112,11 +112,11 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         )
 
         # Criteria ranking
-        st.subheader("Prioriza estas características (10 = más importante)")
-        st.caption("Puedes dar la misma puntuación a varios criterios")
+        st.subheader(":material/stack_star: | Prioriza estas características (10 = más importante)") # Change ((10 = más importante)) to a help icon
+        st.caption("Puedes dar la misma puntuación a varios criterios.")
         ranks: List[float] = []
         for crit in CRITERIA:
-            label = f"{CRITERIA_ICONS[crit]} {CRITERIA_LABELS[crit]}"
+            label = f"{CRITERIA_ICONS[crit]}  |  {CRITERIA_LABELS[crit]}"
             rank = st.number_input(
                 label,
                 min_value=1,

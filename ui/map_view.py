@@ -59,12 +59,12 @@ def render_map_view(gdf: gpd.GeoDataFrame, scores_df: pd.DataFrame) -> None:
         return
 
     # Check if in comparison mode
-    in_comparison_mode = st.session_state.get("view_selector") == "⚖️ Comparación"
+    in_comparison_mode = st.session_state.get("view_selector") == ":material/balance: Comparación"
     
     if in_comparison_mode:
-        st.markdown("**Consejo:** haz clic en un municipio del mapa para añadirlo a la comparación 👇")
+        st.markdown(":material/prompt_suggestion: **Consejo:** haz clic en un municipio del mapa para añadirlo a la comparación.     :material/arrow_drop_down_circle:")
     else:
-        st.markdown("**Consejo:** haz clic en un municipio del mapa para ver más detalles abajo 👇")
+        st.markdown(":material/prompt_suggestion: **Consejo:** haz clic en un municipio del mapa para ver más detalles abajo.     :material/arrow_drop_down_circle:")
     
     suppress = st.session_state.pop("suppress_map_selection", False)
 
@@ -96,7 +96,7 @@ def render_map_view(gdf: gpd.GeoDataFrame, scores_df: pd.DataFrame) -> None:
             elif selected_row["codigo"] in comparison_list:
                 st.info(f"✓ {clicked_name} ya está en la comparación")
             else:
-                st.warning("⚠️ Máximo 4 municipios en comparación. Elimina uno para añadir otro.")
+                st.warning(":material/warning: Máximo 4 municipios en comparación. Elimina uno para añadir otro.")
         else:
             # Show details inline
             st.session_state["selected_municipality"] = selected_row
