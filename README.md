@@ -5,23 +5,24 @@ A Streamlit-based decision support application for finding your ideal municipali
 ## Overview
 
 This app helps residents choose municipalities (<50k population) by ranking them according to:
-- **Accessibility**: Monthly commute time to essential services (supermarkets, healthcare, sports, education)
+- **Accessibility**: Weekly commute time to essential services (supermarkets, healthcare, sports, education)
 - **Quality of Life**: Air quality, education quality, building attractiveness, transport infrastructure, economic dynamism
 - **Affordability**: Housing prices per m²
 
 ## Key Features
 
 ### 1. Personalized Questionnaire
-- Car usage frequency
-- Family situation (children, education preferences)
-- Sports and healthcare needs
+- Car usage frequency (days per week)
+- Sports facility usage frequency (visits per week)
+- Healthcare facility usage frequency (visits per week)
+- Family situation (children, education levels)
 - Population size preferences
-- Priority ranking for 7 criteria (1-10 scale)
+- Priority ranking for 7 criteria (0-10 scale, where 0 = not important)
 
 ### 2. Smart Weighting (AHP)
 - Analytic Hierarchy Process converts user priorities into normalized weights
-- Consistency ratio (CR) validation with automatic correction
-- Transparent weight display in sidebar
+- Robust to user input inconsistencies with automatic mathematical correction
+- Zero-weight support for criteria users consider unimportant
 
 ### 3. Interactive Visualizations
 - **Map View**: Choropleth heatmap with click-to-select municipalities
@@ -58,7 +59,7 @@ App_v2/
 │   ├── constants.py       # Criteria, labels, column mappings
 │   └── styles.py          # CSS styling and page config
 ├── core/
-│   ├── accessibility.py   # Monthly commute time computation
+│   ├── accessibility.py   # Weekly commute time computation
 │   ├── ahp.py             # AHP weight calculation algorithms
 │   ├── data_loader.py     # Data loading and image handling
 │   └── scoring.py         # Normalization and ranking
@@ -80,46 +81,67 @@ App_v2/
 
 ### Accessibility Calculation
 
-Monthly commute hours = $Σ (service visits/month × round-trip minutes / 60) × user weight$
+Weekly commute time is calculated based on user-specified visit frequencies:
+
+$$
+\text{Weekly Hours} = \sum_{\text{service}} \left( \text{visits per week} \times \frac{2 \times \text{minutes one-way}}{60} \right)
+$$
 
 #### Services included:
 
-* Supermarkets (8 visits/month)
+- **Supermarkets**: 2 visits/week (fixed baseline)
+- **Gas stations**: Scaled with car usage (~0.1 × days per week using car)
+- **Sports facilities**: User-specified frequency (visits per week)
+- **Healthcare**: User-specified frequency split between:
+  - GP visits (20%)
+  - Pharmacy visits (80%)
+- **Education**: 5 visits/week (weekdays) per level, split evenly if multiple levels
 
-* Gas stations (2 visits/month, car-dependent)
+#### Transportation mode blending:
 
-* Sports facilities (4 visits/month)
+Travel times blend car and public transport based on car usage frequency:
 
-* Healthcare: GP (0.25/month) + Pharmacy (1/month)
-
-* Education (2 visits/month per level, if applicable)
+$$
+\text{Minutes} = \left(\frac{\text{car days}}{\text{7}}\right) \times \text{minutes}_{\text{car}} + \left(1 - \frac{\text{car days}}{\text{7}}\right) \times \text{minutes}_{\text{PT}}
+$$
 
 ### Criteria Normalization
-* **Benefit criteria** (higher is better): (x - min) / (max - min)
 
-* **Cost criteria** (lower is better): 1 - (x - min) / (max - min)
+**Benefit criteria** (higher is better):
+
+$$
+\text{Normalized} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+$$
+
+**Cost criteria** (lower is better):
+
+$$
+\text{Normalized} = 1 - \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+$$
 
 ### Final Score
 
-* Score = $Σ (normalized_criterion × AHP_weight)$
+Raw score:
 
-* Weighted score = (Score / max_score) × 100
+$$
+\text{Score} = \sum_{i=1}^{7} \left( \text{Normalized}_i \times \text{Weight}_i \right)
+$$
+
+Weighted score (0-100 scale):
+
+$$
+\text{Weighted Score} = \frac{\text{Score}}{\max(\text{Score})} \times 100
+$$
 
 ## Data Sources
 
-* Geographic boundaries: INSPIRE municipal boundaries (ETRS89)
-
-* Indicators: Community of Madrid open data
-
-* IDEALISTA
-
-    * Demographics (`IDE_PoblacionTotal`)
-
-    * Housing prices (`IDE_PrecioPorMetroCuadrado`)
-
-* Accessibility times (ACC_* columns)
-
-* Quality attributes (ATR_* columns)
+- **Geographic boundaries**: INSPIRE municipal boundaries (ETRS89)
+- **Community of Madrid open data**: 
+  - Demographics (`IDE_PoblacionTotal`)
+  - Housing prices (`IDE_PrecioPorMetroCuadrado`)
+  - Accessibility travel times (`ACC_*` columns for car and public transport)
+  - Quality attributes (`ATR_*` clusters for education, air quality, buildings, transport, economy)
+- **OpenStreetMap**: Supermarket locations and accessibility
 
 ## License
 Educational/research use. Data sources retain their original licenses.
