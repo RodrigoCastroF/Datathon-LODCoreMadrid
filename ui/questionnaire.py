@@ -101,19 +101,19 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         )
 
         # Criteria ranking
-        st.subheader(":material/stack_star: | Prioriza estas características (10 = más importante)") # Change ((10 = más importante)) to a help icon
+        st.subheader(":material/stack_star: | Prioriza estas características (0 = no importa, 10 = más importante)")
         st.caption("Puedes dar la misma puntuación a varios criterios.")
         ranks: List[float] = []
         for crit in CRITERIA:
             label = f"{CRITERIA_ICONS[crit]}  |  {CRITERIA_LABELS[crit]}"
             rank = st.number_input(
                 label,
-                min_value=1,
+                min_value=0,
                 max_value=10,
                 value=5,
                 step=1,
                 key=f"rank_{crit}",
-                help="10 = muy importante, 1 = poco importante"
+                help="10 = muy importante, 0 = no importa"
             )
             ranks.append(float(rank))
 

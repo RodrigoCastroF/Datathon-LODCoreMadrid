@@ -117,14 +117,41 @@ def preferences_to_weights(answers: np.ndarray, mode: str) -> np.ndarray:
     """Complete AHP pipeline: preferences → matrix → weights.
     
     Automatically projects to consistent matrix if CR > 0.10.
+    Handles zero values by excluding them from AHP computation.
     
     Args:
-        answers: User preference values
+        answers: User preference values (can include 0 for "no importance")
         mode: 'comparison' or 'ranking'
         
     Returns:
-        Normalized weight vector
+        Normalized weight vector (criteria with 0 input get 0 weight)
     """
-    A = preferences_to_matrix(answers, mode)
+    answers = np.asarray(answers, dtype=float)
+    n = len(answers)
+    
+    # Identify non-zero criteria
+    nonzero_mask = answers > 0
+    nonzero_indices = np.where(nonzero_mask)[0]
+    
+    # Handle edge cases
+    if len(nonzero_indices) == 0:
+        # All zeros → equal weights
+        return np.ones(n) / n
+    
+    if len(nonzero_indices) == 1:
+        # Only one non-zero → give it full weight
+        weights = np.zeros(n)
+        weights[nonzero_indices[0]] = 1.0
+        return weights
+    
+    # Extract non-zero answers and compute their weights
+    nonzero_answers = answers[nonzero_mask]
+    A = preferences_to_matrix(nonzero_answers, mode)
     A = A if compute_cr(A) < 0.1 else project_to_consistent(A)
-    return compute_weights(A)
+    nonzero_weights = compute_weights(A)
+    
+    # Reconstruct full weight vector
+    weights = np.zeros(n)
+    weights[nonzero_indices] = nonzero_weights
+    
+    return weights

@@ -82,7 +82,9 @@ def main() -> None:
     
     # Compute weights via AHP
     try:
-        inverted_ranks = [11 - r for r in prefs["ranks"]]
+        # Invert ranks: higher user value → lower AHP rank (higher priority)
+        # Keep 0 as 0 to indicate "no importance"
+        inverted_ranks = [11 - r if r > 0 else 0 for r in prefs["ranks"]]
         w_vec = preferences_to_weights(np.array(inverted_ranks, dtype=float), mode="ranking")
         weights = {CRITERIA[i]: float(w_vec[i]) for i in range(len(CRITERIA))}
     except Exception as e:
