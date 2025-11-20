@@ -136,6 +136,20 @@ SPORT_FREQ_TO_W: Dict[str, float] = {
     SPORT_FREQ_LABELS[3]: 6.5,
 }
 
+SUPERMARKET_FREQ_LABELS: List[str] = [
+    "1 vez/semana",
+    "2 veces/semana",
+    "3 veces/semana",
+    "4 o más veces/semana",
+]
+
+SUPERMARKET_FREQ_TO_W: Dict[str, float] = {
+    SUPERMARKET_FREQ_LABELS[0]: 1.0,
+    SUPERMARKET_FREQ_LABELS[1]: 2.0,
+    SUPERMARKET_FREQ_LABELS[2]: 3.0,
+    SUPERMARKET_FREQ_LABELS[3]: 4.5,
+}
+
 HOSPITAL_USE_LABELS: List[str] = [
     "Solo para emergencias",
     "Revisiones regulares",

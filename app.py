@@ -67,6 +67,7 @@ def main() -> None:
     acc_df = compute_accessibility_hours(
         df=df,
         freq_car=prefs["w_car"],
+        freq_supermarket=prefs["w_supermarket"],
         freq_sport=prefs["w_sport"],
         freq_hospital=prefs["w_hospital"],
         edu_has_kids=prefs["edu_has_kids"],

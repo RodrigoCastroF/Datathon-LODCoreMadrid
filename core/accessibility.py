@@ -13,6 +13,7 @@ from config.constants import ACC_COLUMNS, edu_level_to_key
 def compute_accessibility_hours(
     df: pd.DataFrame,
     freq_car: float,
+    freq_supermarket: float,
     freq_sport: float,
     freq_hospital: float,
     edu_has_kids: bool,
@@ -27,6 +28,7 @@ def compute_accessibility_hours(
     Args:
         df: Municipality dataset
         freq_car: Car usage frequency (days per week) for mode choice weighting
+        freq_supermarket: Supermarket visit frequency (times per week)
         freq_sport: Sports facility visit frequency (times per week)
         freq_hospital: Hospital/health center visit frequency (times per week)
         edu_has_kids: Whether to include education travel
@@ -55,12 +57,12 @@ def compute_accessibility_hours(
         out[f"hrs_{key}"] = hours
         total += hours
 
-    # Supermarkets (assume 2 visits/week, essential)
+    # Supermarkets (user-specified frequency)
     mins_super = blend_minutes(
         ACC_COLUMNS["supermarket"]["coche"],
         ACC_COLUMNS["supermarket"]["TransportePublico"],
     )
-    add_hours("supermarket", mins_super, 2.0)
+    add_hours("supermarket", mins_super, freq_supermarket)
 
     # Gas stations (scale with car usage: ~0.5 visits/week for frequent drivers)
     if freq_car > 0:

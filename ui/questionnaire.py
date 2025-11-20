@@ -7,6 +7,7 @@ from typing import Dict, Any, List, Optional, Literal
 from config.constants import (
     CRITERIA, CRITERIA_ICONS, CRITERIA_LABELS,
     CAR_FREQ_LABELS, CAR_FREQ_TO_WCAR,
+    SUPERMARKET_FREQ_LABELS, SUPERMARKET_FREQ_TO_W,
     SPORT_FREQ_LABELS, SPORT_FREQ_TO_W,
     HOSPITAL_USE_LABELS, HOSPITAL_USE_TO_W,
     EDU_LEVEL_OPTIONS,
@@ -21,7 +22,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
         
     Returns:
         Dictionary with user preferences:
-            - w_car, w_sport, w_hospital: float frequencies
+            - w_car, w_supermarket, w_sport, w_hospital: float frequencies
             - edu_has_kids: bool
             - edu_variant: Optional['public'|'pubpriv']
             - edu_levels: List[str]
@@ -39,6 +40,15 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
             index=2,
         )
         w_car = CAR_FREQ_TO_WCAR[car_use]
+
+        # Supermarket
+        st.subheader(":material/shopping_cart: | Compras - Supermercado")
+        supermarket_use = st.selectbox(
+            "¿Con qué frecuencia vas al supermercado?",
+            options=SUPERMARKET_FREQ_LABELS,
+            index=1,
+        )
+        w_supermarket = SUPERMARKET_FREQ_TO_W[supermarket_use]
 
         # Family - Education
         st.subheader(":material/school: | Familia - Educación")
@@ -119,6 +129,7 @@ def render_questionnaire(df_raw) -> Dict[str, Any]:
 
     return {
         "w_car": w_car,
+        "w_supermarket": w_supermarket,
         "w_sport": w_sport,
         "w_hospital": w_hospital,
         "edu_has_kids": edu_has_kids,
