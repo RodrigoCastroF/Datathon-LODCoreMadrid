@@ -33,7 +33,7 @@ def main() -> None:
         st.session_state["switch_view_to"] = None
     
     if st.session_state.get("clear_comparison_only"):
-        for key in ["comparison_municipality", "comparison_selector_in_panel", "clear_comparison_only"]:
+        for key in ["comparison_municipality_code", "comparison_selector_in_panel", "clear_comparison_only"]:
             st.session_state.pop(key, None)
     
     # Clear selected municipality when switching views
@@ -75,7 +75,9 @@ def main() -> None:
         edu_levels=prefs["edu_levels"],
     )
     
-    df_scored = df.merge(acc_df[["codigo", "AccessibilityHoursWeekly"]], on="codigo", how="left")
+    # Merge accessibility data including breakdown columns (exclude 'Nombre' to avoid duplicates)
+    acc_cols = ["codigo", "AccessibilityHoursWeekly"] + [col for col in acc_df.columns if col.startswith("hrs_")]
+    df_scored = df.merge(acc_df[acc_cols], on="codigo", how="left")
     
     # Normalize criteria
     norm_df = normalize_criteria(df_scored, BENEFIT_COLUMNS, COST_COLUMNS)
@@ -101,7 +103,7 @@ def main() -> None:
         gdf = gdf_raw.merge(
             scores_df[["codigo", "Nombre", "Score", "weighted_score", "AccessibilityHoursWeekly",
                       "IDE_PoblacionTotal", "IDE_PrecioPorMetroCuadrado"] +
-                     [c for c in scores_df.columns if c.startswith("NORM_") or c.startswith("CONTRIB_")]],
+                     [c for c in scores_df.columns if c.startswith("NORM_") or c.startswith("CONTRIB_") or c.startswith("hrs_")]],
             on=["Nombre"],
             how="inner",
         )
@@ -118,7 +120,7 @@ def main() -> None:
 
     # Clear selected municipality when view changes
     if st.session_state["previous_view"] != view_option:
-        st.session_state.pop("selected_municipality", None)
+        st.session_state.pop("selected_municipality_code", None)
         st.session_state.pop("details_origin", None)
         st.session_state["previous_view"] = view_option    
 

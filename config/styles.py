@@ -360,9 +360,10 @@ CSS_STYLES = """
 }
 
 .demographics-legend {
-    font-size: 11px;
+    font-size: 13px;
     color: #666;
     margin-top: 0.25rem;
+    font-weight: 500;
 }
 
 .demographics-legend span {

@@ -93,7 +93,7 @@ def show_single_municipality_details(
 
     # Gender distribution
     if show_gender_chart:
-        st.markdown("##### :material/wc: **Distribución por género**")
+        st.markdown("#### **:material/wc: Distribución por género**")
         
         # Calculate gender totals
         total_hombres = sum([muni[f"DEM_Edad_{g}_Hombres"] for g in ["0_19", "20_39", "40_59", "60_79", "80Plus"]])
@@ -120,10 +120,66 @@ def show_single_municipality_details(
             unsafe_allow_html=True
         )
 
+    # Transportation breakdown
+    st.markdown("#### **:material/directions_car: Desglose del tiempo en transporte**")
+    
+    # Aggregate hours by service category
+    hrs_gas = muni.get("hrs_gas", 0)
+    hrs_supermarket = muni.get("hrs_supermarket", 0)
+    hrs_sport = muni.get("hrs_sport", 0)
+    hrs_health = muni.get("hrs_gp", 0) + muni.get("hrs_pharmacy", 0)
+    
+    # Sum all education-related columns
+    hrs_education = sum([muni.get(col, 0) for col in muni.index if col.startswith("hrs_edu_")])
+    
+    total_hrs = hrs_gas + hrs_supermarket + hrs_sport + hrs_health + hrs_education
+    
+    if total_hrs > 0:
+        # Calculate percentages
+        pct_gas = (hrs_gas / total_hrs * 100)
+        pct_supermarket = (hrs_supermarket / total_hrs * 100)
+        pct_sport = (hrs_sport / total_hrs * 100)
+        pct_health = (hrs_health / total_hrs * 100)
+        pct_education = (hrs_education / total_hrs * 100)
+        
+        # Build the bar chart (only show categories with > 0 hours)
+        bar_html = '<div class="demographics-bar">'
+        
+        if pct_gas > 0:
+            bar_html += f'<div style="background: #E8A05D; width: {pct_gas:.1f}%;" title="{hrs_gas:.2f} h/semana">{pct_gas:.1f}%</div>'
+        if pct_supermarket > 0:
+            bar_html += f'<div style="background: #6FB5BA; width: {pct_supermarket:.1f}%;" title="{hrs_supermarket:.2f} h/semana">{pct_supermarket:.1f}%</div>'
+        if pct_sport > 0:
+            bar_html += f'<div style="background: #A59FD0; width: {pct_sport:.1f}%;" title="{hrs_sport:.2f} h/semana">{pct_sport:.1f}%</div>'
+        if pct_health > 0:
+            bar_html += f'<div style="background: #C35309; width: {pct_health:.1f}%;" title="{hrs_health:.2f} h/semana">{pct_health:.1f}%</div>'
+        if pct_education > 0:
+            bar_html += f'<div style="background: #568EE2; width: {pct_education:.1f}%;" title="{hrs_education:.2f} h/semana">{pct_education:.1f}%</div>'
+        
+        bar_html += '</div>'
+        st.markdown(bar_html, unsafe_allow_html=True)
+        
+        # Legend
+        legend_html = '<div class="demographics-legend">'
+        if pct_gas > 0:
+            legend_html += '<span><span style="color: #E8A05D;">■</span> Gasolineras</span>'
+        if pct_supermarket > 0:
+            legend_html += '<span><span style="color: #6FB5BA;">■</span> Supermercados</span>'
+        if pct_sport > 0:
+            legend_html += '<span><span style="color: #A59FD0;">■</span> Deportes</span>'
+        if pct_health > 0:
+            legend_html += '<span><span style="color: #C35309;">■</span> Salud</span>'
+        if pct_education > 0:
+            legend_html += '<span><span style="color: #568EE2;">■</span> Educación</span>'
+        legend_html += '</div>'
+        st.markdown(legend_html, unsafe_allow_html=True)
+    else:
+        st.markdown("_No hay datos de transporte disponibles._")
+
     # Legend
     st.markdown("### **Desglose por criterio**")
     st.markdown(
-        '<div style="font-size: 12px; color: #666; margin-bottom: 1rem;">'
+        '<div style="font-size: 14px; color: #666; margin-bottom: 1rem; font-weight: 500;">'
         '<span style="color: #377F86;">●</span> Excelente (≥70%) | '
         '<span style="color: #C35309;">●</span> Promedio (40-69%) | '
         '<span style="color: #C33241;">●</span> Bajo (<40%)'
@@ -215,22 +271,29 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
                 elif origin == "list":
                     st.session_state["switch_view_to"] = ":material/list: Lista de municipios"
                 st.session_state["suppress_map_selection"] = True
-                for key in ["selected_municipality", "comparison_municipality", "comparison_selector",
+                for key in ["selected_municipality_code", "comparison_municipality_code", "comparison_selector",
                            "comparison_selector_in_panel", "details_origin"]:
                     st.session_state.pop(key, None)
                 st.rerun()
 
 
-        comparison_mode = "comparison_municipality" in st.session_state
+        comparison_mode = "comparison_municipality_code" in st.session_state
 
         if comparison_mode:
-            comparison_muni = st.session_state.comparison_municipality
+            # Look up fresh comparison municipality data
+            comparison_muni_data = all_scores[all_scores["codigo"] == st.session_state["comparison_municipality_code"]]
+            if len(comparison_muni_data) == 0:
+                # Comparison municipality no longer in results
+                st.session_state.pop("comparison_municipality_code", None)
+                st.rerun()
+                return
+            comparison_muni = comparison_muni_data.iloc[0]
             
             # Close comparison button at top
             close_col1, close_col2 = st.columns([17, 1])
             with close_col2:
                 if st.button(":material/close:", key=f"end_comparison_{municipality['codigo']}", help="Terminar comparación"):
-                    st.session_state.pop("comparison_municipality", None)
+                    st.session_state.pop("comparison_municipality_code", None)
                     st.rerun()
             
             col1, col2, col3 = st.columns([5, 1, 5])
@@ -261,8 +324,8 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
 
                     if selected != "Selecciona un municipio..." and selected != current_selection:
                         comp_name = selected.split(" (Puntuación:")[0]
-                        comp_row = all_scores[all_scores["Nombre"] == comp_name].iloc[0]
-                        st.session_state["comparison_municipality"] = comp_row
+                        comp_code = all_scores[all_scores["Nombre"] == comp_name].iloc[0]["codigo"]
+                        st.session_state["comparison_municipality_code"] = comp_code
                         st.rerun()
 
         else:
@@ -276,6 +339,6 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
                                       key="comparison_selector")
                 if selected != "Selecciona un municipio...":
                     comp_name = selected.split(" (Puntuación:")[0]
-                    comp_row = all_scores[all_scores["Nombre"] == comp_name].iloc[0]
-                    st.session_state["comparison_municipality"] = comp_row
+                    comp_code = all_scores[all_scores["Nombre"] == comp_name].iloc[0]["codigo"]
+                    st.session_state["comparison_municipality_code"] = comp_code
                     st.rerun()

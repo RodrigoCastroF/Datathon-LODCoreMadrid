@@ -98,16 +98,24 @@ def render_map_view(gdf: gpd.GeoDataFrame, scores_df: pd.DataFrame) -> None:
             else:
                 st.warning(":material/warning: Máximo 4 municipios en comparación. Elimina uno para añadir otro.")
         else:
-            # Show details inline
-            st.session_state["selected_municipality"] = selected_row
+            # Show details inline - store only the code
+            st.session_state["selected_municipality_code"] = selected_row["codigo"]
             st.session_state["details_origin"] = "map"
     
     # Show details inline in map view
-    if "selected_municipality" in st.session_state and st.session_state.get("details_origin") == "map":
+    if "selected_municipality_code" in st.session_state and st.session_state.get("details_origin") == "map":
         st.markdown("---")
         from ui.details_view import render_details
         from core.data_loader import load_placeholder_images
-        images = load_placeholder_images()
-        render_details(st.session_state["selected_municipality"], images, scores_df)
+        
+        # Look up fresh data from current scores_df
+        selected_muni = scores_df[scores_df["codigo"] == st.session_state["selected_municipality_code"]]
+        if len(selected_muni) > 0:
+            images = load_placeholder_images()
+            render_details(selected_muni.iloc[0], images, scores_df)
+        else:
+            # Municipality no longer in filtered results
+            st.session_state.pop("selected_municipality_code", None)
+            st.session_state.pop("details_origin", None)
 
 

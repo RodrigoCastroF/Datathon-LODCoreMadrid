@@ -34,7 +34,7 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
             st.markdown(f"<div class='municipality-name'>{muni['Nombre']}</div>", unsafe_allow_html=True)
         with btn_col:
             if st.button("Ver detalles", key=f"details_btn_{row_idx}_{muni['codigo']}"):
-                st.session_state["selected_municipality"] = muni
+                st.session_state["selected_municipality_code"] = muni["codigo"]
                 st.session_state["details_origin"] = "list"
                 st.session_state["suppress_map_selection"] = True
                 st.session_state["switch_view_to"] = ":material/list: Lista de municipios"
@@ -132,12 +132,15 @@ def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.I
 
     for idx, row in page_df.iterrows():
         # Show details inline if this municipality is selected
-        if ("selected_municipality" in st.session_state and 
+        if ("selected_municipality_code" in st.session_state and 
             st.session_state.get("details_origin") == "list" and
-            st.session_state["selected_municipality"]["codigo"] == row["codigo"]):
+            st.session_state["selected_municipality_code"] == row["codigo"]):
             st.markdown('<hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
             from ui.details_view import render_details
-            render_details(st.session_state["selected_municipality"], images, scores_df)
+            # Look up fresh data from current scores_df
+            selected_muni = scores_df[scores_df["codigo"] == st.session_state["selected_municipality_code"]]
+            if len(selected_muni) > 0:
+                render_details(selected_muni.iloc[0], images, scores_df)
             st.markdown('<hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
         else:
             render_municipality_card(row, images, idx)
