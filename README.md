@@ -10,7 +10,7 @@ Esta herramienta permite a los residentes elegir entre municipios de menos de 50
 - **Calidad de vida**: Calidad del aire, educación, atractivo urbanístico, infraestructura de transporte y dinamismo económico.
 - **Asequibilidad**: Precio de la vivienda por m².
 
-## Funcionalidades Principales
+## Funcionalidades principales
 
 ### 1. Cuestionario personalizado
 
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Estructura del Proyecto
+## Estructura del proyecto
 
 ```md
 Datathon-LODCoreMadrid/
@@ -106,11 +106,11 @@ Los **servicios incluidos** son:
 - **Sanidad**: La frecuencia total se reparte en 20% para médico de cabecera y 80% para farmacia, según el perfil sanitario del usuario.
 - **Educación**: 5 visitas/semana (días escolares) divididas equitativamente entre los niveles educativos seleccionados (Preinfantil, Infantil, Primaria, Secundaria), solo si tiene hijos.
 
-Los tiempos de desplazamiento (\(\text{minutos}_s\)) se calculan como una **combinación ponderada entre coche y transporte público**, según la frecuencia de uso del coche declarada por el usuario:
+Los tiempos de desplazamiento ($\text{minutos}_s$) se calculan como una **combinación ponderada entre coche y transporte público**, según la frecuencia de uso del coche declarada por el usuario:
 
 $$\text{minutos}_s = w_{\text{coche}} \times \text{minutos}_{\text{coche}} + (1 - w_{\text{coche}}) \times \text{minutos}_{\text{transporte público}}$$
 
-donde \(w_{\text{coche}} = \frac{\text{frecuencia coche (días/semana)}}{7}\) representa la proporción de uso del coche. Los tiempos se obtienen de datos reales de accesibilidad para cada municipio.
+donde $w_{\text{coche}} = \frac{\text{frecuencia coche (días/semana)}}{7}$ representa la proporción de uso del coche. Los tiempos se obtienen de datos reales de accesibilidad para cada municipio.
 
 ### Normalización de criterios
 
@@ -124,7 +124,7 @@ $$\text{normalizado} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$$
 
 $$\text{normalizado} = 1 - \frac{x - x_{\min}}{x_{\max} - x_{\min}}$$
 
-Donde \(x\) es el valor del criterio para un municipio específico, y \(x_{\min}\) y \(x_{\max}\) son los valores mínimo y máximo observados en todo el conjunto de municipios filtrados.
+Donde $x$ es el valor del criterio para un municipio específico, y $x_{\min}$ y $x_{\max}$ son los valores mínimo y máximo observados en todo el conjunto de municipios filtrados.
 
 ### Puntuación final
 
@@ -136,7 +136,7 @@ Esta puntuación se escala al rango [0, 100] para facilitar la interpretación:
 
 $$\text{Score final} = \frac{\text{Score}}{\text{Score}_{\max}} \times 100$$
 
-Donde \(\text{Score}_{\max}\) es la puntuación máxima teórica posible (1.0 en este caso, ya que todos los criterios están normalizados). Los municipios se ordenan descendentemente por este score final, mostrando primero las mejores opciones según las preferencias del usuario.
+Donde $\text{Score}_{\max}$ es la puntuación máxima teórica posible (1.0 en este caso, ya que todos los criterios están normalizados). Los municipios se ordenan descendentemente por este score final, mostrando primero las mejores opciones según las preferencias del usuario.
 
 ## Fuentes de datos
 
