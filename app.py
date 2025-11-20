@@ -17,7 +17,6 @@ from ui.map_view import render_map_view
 from ui.list_view import render_list_view
 from ui.details_view import render_details
 from ui.comparison_view import render_comparison_view
-from ui.sensitivity import render_sensitivity
 
 
 def main() -> None:
@@ -139,11 +138,6 @@ def main() -> None:
     else:
         render_comparison_view(scores_df, images)
     
-
-    # Sensitivity analysis
-    st.markdown('<hr style="margin: -0.25rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
-    render_sensitivity(scores_df, weights, norm_df, compute_scores)
-
     # Back to top button
     st.markdown(
         '<a href="#top" class="back-to-top" title="Volver arriba">:material/keyboard_arrow_up:</a>',

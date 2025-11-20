@@ -120,9 +120,6 @@ def show_single_municipality_details(
             unsafe_allow_html=True
         )
 
-
-
-
     # Legend
     st.markdown("### **Desglose por criterio**")
     st.markdown(
