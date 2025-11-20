@@ -152,6 +152,25 @@ HOSPITAL_USE_TO_W: Dict[str, float] = {
 
 EDU_LEVEL_OPTIONS: List[str] = ["Preinfantil", "Infantil", "Primaria", "Secundaria"]
 
+# Demographic column mappings
+DEMOGRAPHIC_COLUMNS: Dict[str, str] = {
+    "0-19": "DEM_Edad_0_19_Total",
+    "20-39": "DEM_Edad_20_39_Total",
+    "40-59": "DEM_Edad_40_59_Total",
+    "60-79": "DEM_Edad_60_79_Total",
+    "80+": "DEM_Edad_80Plus_Total",
+}
+
+# Age group labels for display
+AGE_GROUP_LABELS: Dict[str, str] = {
+    "0-19": "0-19 años",
+    "20-39": "20-39 años",
+    "40-59": "40-59 años",
+    "60+": "60+ años",
+}
+
+# Age groups to combine for 60+
+AGE_60_PLUS_GROUPS: List[str] = ["60-79", "80+"]
 
 def edu_level_to_key(level: str, variant: Literal["public", "pubpriv"]) -> str:
     """Map education level and variant to ACC column key.

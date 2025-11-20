@@ -1,5 +1,3 @@
-# ui/details_view.py - Complete updated file
-
 # ui/details_view.py
 """Municipality details and comparison panel."""
 
@@ -8,28 +6,30 @@ from typing import Dict, Optional
 
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
+
 from PIL import Image
 
-from config.constants import CRITERIA, CRITERIA_ICONS, CRITERIA_LABELS, BENEFIT_COLUMNS, COST_COLUMNS
+from config.constants import (
+    CRITERIA, CRITERIA_ICONS, CRITERIA_LABELS, BENEFIT_COLUMNS, COST_COLUMNS,
+    DEMOGRAPHIC_COLUMNS, AGE_GROUP_LABELS, AGE_60_PLUS_GROUPS
+)
 
 
 def show_single_municipality_details(
     muni: pd.Series,
     images: Dict[str, Optional[Image.Image]],
-    title: Optional[str] = None,
     all_scores: Optional[pd.DataFrame] = None,
+    show_gender_chart: bool = True,
 ) -> None:
     """Show details for one municipality.
     
     Args:
         muni: Municipality data series
         images: Dictionary of placeholder images
-        title: Optional section title
         all_scores: Full scores DataFrame for ranking calculation
+        show_gender_chart: Whether to show gender chart inline
     """
-    if title:
-        st.markdown(f"**{title}**")
-
     col1, col2 = st.columns([1, 2])
 
     with col1:
@@ -48,8 +48,131 @@ def show_single_municipality_details(
         st.markdown(f":material/payments: | **Precio vivienda:** {muni['IDE_PrecioPorMetroCuadrado']:.0f} €/m²")
         st.markdown(f":material/schedule: | **Horas a la semana en transporte:** {muni['AccessibilityHoursWeekly']:.1f}")
 
+    # Demographics section
+    st.markdown("#### **:material/leaderboard: Demografía**")
+
+    # Calculate percentages using demographics total
+    dem_total = (muni[DEMOGRAPHIC_COLUMNS["0-19"]] + 
+                muni[DEMOGRAPHIC_COLUMNS["20-39"]] + 
+                muni[DEMOGRAPHIC_COLUMNS["40-59"]] + 
+                muni[DEMOGRAPHIC_COLUMNS["60-79"]] + 
+                muni[DEMOGRAPHIC_COLUMNS["80+"]])
+
+    pct_0_19 = (muni[DEMOGRAPHIC_COLUMNS["0-19"]] / dem_total * 100)
+    pct_20_39 = (muni[DEMOGRAPHIC_COLUMNS["20-39"]] / dem_total * 100)
+    pct_40_59 = (muni[DEMOGRAPHIC_COLUMNS["40-59"]] / dem_total * 100)
+    pct_60plus = ((muni[DEMOGRAPHIC_COLUMNS["60-79"]] + muni[DEMOGRAPHIC_COLUMNS["80+"]]) / dem_total * 100)
+
+    # Get exact counts
+    count_0_19 = int(muni[DEMOGRAPHIC_COLUMNS["0-19"]])
+    count_20_39 = int(muni[DEMOGRAPHIC_COLUMNS["20-39"]])
+    count_40_59 = int(muni[DEMOGRAPHIC_COLUMNS["40-59"]])
+    count_60plus = int(muni[DEMOGRAPHIC_COLUMNS["60-79"]] + muni[DEMOGRAPHIC_COLUMNS["80+"]])
+
+    # Stacked bar
+    st.markdown(
+        f'<div class="demographics-bar">'
+        f'<div style="background: #568EE2; width: {pct_0_19:.1f}%;" title="{count_0_19:,} personas">{pct_0_19:.1f}%</div>'
+        f'<div style="background: #6FB5BA; width: {pct_20_39:.1f}%;" title="{count_20_39:,} personas">{pct_20_39:.1f}%</div>'
+        f'<div style="background: #A59FD0; width: {pct_40_59:.1f}%;" title="{count_40_59:,} personas">{pct_40_59:.1f}%</div>'
+        f'<div style="background: #E8A05D; width: {pct_60plus:.1f}%;" title="{count_60plus:,} personas">{pct_60plus:.1f}%</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+    
     # Legend
-    st.markdown("#### **Desglose por criterio**")
+    st.markdown(
+        '<div class="demographics-legend">'
+        f'<span><span style="color: #568EE2;">■</span> {AGE_GROUP_LABELS["0-19"]}</span>'
+        f'<span><span style="color: #6FB5BA;">■</span> {AGE_GROUP_LABELS["20-39"]}</span>'
+        f'<span><span style="color: #A59FD0;">■</span> {AGE_GROUP_LABELS["40-59"]}</span>'
+        f'<span><span style="color: #E8A05D;">■</span> {AGE_GROUP_LABELS["60+"]}</span>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # Gender distribution
+    if show_gender_chart:
+        st.markdown("##### :material/wc: **Distribución por género**")
+        
+        # Calculate gender totals
+        total_hombres = sum([muni[f"DEM_Edad_{g}_Hombres"] for g in ["0_19", "20_39", "40_59", "60_79", "80Plus"]])
+        total_mujeres = sum([muni[f"DEM_Edad_{g}_Mujeres"] for g in ["0_19", "20_39", "40_59", "60_79", "80Plus"]])
+        
+        pct_hombres = (total_hombres / dem_total * 100)
+        pct_mujeres = (total_mujeres / dem_total * 100)
+        
+        # Gender bar
+        st.markdown(
+            f'<div class="demographics-bar">'
+            f'<div style="background: #5B7C99; width: {pct_hombres:.1f}%;" title="{total_hombres:,} personas">{pct_hombres:.1f}%</div>'
+            f'<div style="background: #D4A5A5; width: {pct_mujeres:.1f}%;" title="{total_mujeres:,} personas">{pct_mujeres:.1f}%</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        
+        # Gender legend
+        st.markdown(
+            '<div class="demographics-legend">'
+            f'<span><span style="color: #5B7C99;">■</span> Hombres</span>'
+            f'<span><span style="color: #D4A5A5;">■</span> Mujeres</span>'
+            '</div>',
+            unsafe_allow_html=True
+        )
+        
+        # Drilldown buttons (smaller and constrained)
+        st.markdown('<div style="max-width: 50%; font-size: 0.8rem;">', unsafe_allow_html=True)
+        col_h, col_m = st.columns(2)
+        with col_h:
+            if st.button(":material/man: Hombres", key=f"drill_h_{muni['codigo']}", use_container_width=True):
+                st.session_state[f"gender_drill_{muni['codigo']}"] = "Hombres"
+                st.rerun()
+        with col_m:
+            if st.button(":material/woman: Mujeres", key=f"drill_m_{muni['codigo']}", use_container_width=True):
+                st.session_state[f"gender_drill_{muni['codigo']}"] = "Mujeres"
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Show drilldown
+        drill_key = f"gender_drill_{muni['codigo']}"
+        if drill_key in st.session_state:
+            selected_gender = st.session_state[drill_key]
+            gender_key = "Hombres" if selected_gender == "Hombres" else "Mujeres"
+            
+            # Calculate age distribution for selected gender (4 groups)
+            age_counts = {
+                "0-19": int(muni[f"DEM_Edad_0_19_{gender_key}"]),
+                "20-39": int(muni[f"DEM_Edad_20_39_{gender_key}"]),
+                "40-59": int(muni[f"DEM_Edad_40_59_{gender_key}"]),
+                "60+": int(muni[f"DEM_Edad_60_79_{gender_key}"] + muni[f"DEM_Edad_80Plus_{gender_key}"])
+            }
+            total_gender = sum(age_counts.values())
+            
+            # Build drilldown bar
+            drilldown_html = '<div class="demographics-bar">'
+            for age, count in age_counts.items():
+                pct = (count / total_gender * 100) if total_gender > 0 else 0
+                colors = {"0-19": "#568EE2", "20-39": "#6FB5BA", "40-59": "#A59FD0", "60+": "#E8A05D"}
+                drilldown_html += f'<div style="background: {colors[age]}; width: {pct:.1f}%;" title="{count:,} personas">{pct:.1f}%</div>'
+            drilldown_html += '</div>'
+            
+            col_title, col_close = st.columns([20, 1])
+            with col_title:
+                st.markdown(f"##### **Desglose de {selected_gender} por edad:**")
+            with col_close:
+                if st.button(":material/close:", key=f"close_drill_{muni['codigo']}", help="Cerrar desglose"):
+                    st.session_state.pop(drill_key, None)
+                    st.rerun()
+
+            st.markdown(drilldown_html, unsafe_allow_html=True)
+
+
+
+
+
+
+    # Legend
+    st.markdown("### **Desglose por criterio**")
     st.markdown(
         '<div style="font-size: 12px; color: #666; margin-bottom: 1rem;">'
         '<span style="color: #377F86;">●</span> Excelente (≥70%) | '
@@ -123,7 +246,7 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
         all_scores: Full scores DataFrame for comparison
     """
     with st.container():
-        header_col1, header_col2 = st.columns([14, 1])
+        header_col1, header_col2 = st.columns([16, 1])
         with header_col1:
             st.markdown("## :material/location_on: Detalles del municipio")
             st.markdown(f"### **{municipality['Nombre']}**")
@@ -136,7 +259,7 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
                 }
                 </style>
             """, unsafe_allow_html=True)
-            if st.button("✕", key=f"close_details_{municipality['codigo']}", help="Cerrar"):
+            if st.button(":material/close:", key=f"close_details_{municipality['codigo']}", help="Cerrar"):
                 origin = st.session_state.get("details_origin")
                 if origin == "map":
                     st.session_state["switch_view_to"] = ":material/map: Mapa de municipios"
@@ -153,22 +276,25 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
 
         if comparison_mode:
             comparison_muni = st.session_state.comparison_municipality
+            
+            # Close comparison button at top
+            close_col1, close_col2 = st.columns([17, 1])
+            with close_col2:
+                if st.button(":material/close:", key=f"end_comparison_{municipality['codigo']}", help="Terminar comparación"):
+                    st.session_state.pop("comparison_municipality", None)
+                    st.rerun()
+            
             col1, col2, col3 = st.columns([5, 1, 5])
             
             with col1:
-                show_single_municipality_details(municipality, images, ":material/home: Municipio principal", all_scores)
+                st.markdown("**:material/home: Municipio principal**")
+                show_single_municipality_details(municipality, images, all_scores)
             with col2:
                 st.markdown("<br><br><br>**VS**", unsafe_allow_html=True)
             with col3:
-                comp_header_col1, comp_header_col2 = st.columns([3, 1])
-                with comp_header_col1:
-                    st.markdown("**:material/search: Comparación**")
-                with comp_header_col2:
-                    if st.button("↻", key=f"end_comparison_{municipality['codigo']}", help="Terminar comparación"):
-                        st.session_state["clear_comparison_only"] = True
-                        st.rerun()
+                st.markdown(f"**:material/search: {comparison_muni['Nombre']}**")
+                show_single_municipality_details(comparison_muni, images, all_scores)
 
-                show_single_municipality_details(comparison_muni, images, None, all_scores)
 
                 st.markdown("---\n**Cambiar municipio:**")
                 options = [f"{row['Nombre']} (Puntuación: {row['weighted_score']:.1f})"
@@ -189,6 +315,7 @@ def render_details(municipality: pd.Series, images: Dict, all_scores: pd.DataFra
                         comp_row = all_scores[all_scores["Nombre"] == comp_name].iloc[0]
                         st.session_state["comparison_municipality"] = comp_row
                         st.rerun()
+
         else:
             show_single_municipality_details(municipality, images, all_scores=all_scores)
             st.markdown("---")

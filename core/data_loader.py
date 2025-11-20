@@ -29,7 +29,7 @@ def load_data() -> Tuple[pd.DataFrame, gpd.GeoDataFrame]:
         st.error(f"No se encuentra merged_dataset.csv en {csv_path}")
         st.stop()
 
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, sep = ";")
 
     shp_path = os.path.join(parent_dir, "boundaries", "recintos_municipales_inspire_peninbal_etrs89.shp")
     if not os.path.exists(shp_path):

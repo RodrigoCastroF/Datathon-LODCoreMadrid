@@ -9,12 +9,13 @@ import streamlit as st
 from PIL import Image
 
 
-def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.Image]]) -> None:
+def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.Image]], row_idx: int) -> None:
     """Render single municipality card.
     
     Args:
         muni: Municipality data series
         images: Dictionary of placeholder images (unused, kept for compatibility)
+        row_idx: Unique row index to prevent duplicate keys
     """
     st.markdown('<div class="municipality-card">', unsafe_allow_html=True)
 
@@ -27,11 +28,32 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
             st.image(img, width='stretch')
 
     with col2:
-        st.markdown(f"<div class='municipality-name'>{muni['Nombre']}</div>", unsafe_allow_html=True)
+        # Name and button side by side
+        name_col, btn_col = st.columns([5, 1])
+        with name_col:
+            st.markdown(f"<div class='municipality-name'>{muni['Nombre']}</div>", unsafe_allow_html=True)
+        with btn_col:
+            if st.button("Ver detalles", key=f"details_btn_{row_idx}_{muni['codigo']}"):
+                st.session_state["selected_municipality"] = muni
+                st.session_state["details_origin"] = "list"
+                st.session_state["suppress_map_selection"] = True
+                st.session_state["switch_view_to"] = ":material/list: Lista de municipios"
+                st.rerun()
+        
+        # Calculate color based on score (gradient from red to green)
+        score = muni["weighted_score"]
+        if score >= 70:
+            bg_color = "#A8D5BA"  # Pastel green
+        elif score >= 50:
+            bg_color = "#F9E79F"  # Pastel yellow
+        else:
+            bg_color = "#F5B7B1"  # Pastel red
+        
         st.markdown(
-            f'<div class="score-badge">Puntuación: {muni["weighted_score"]:.1f}</div>',
+            f'<div class="score-badge" style="background-color: {bg_color}; color: #333;">Puntuación: {score:.1f}</div>',
             unsafe_allow_html=True,
         )
+
         st.markdown(
             (
                 f":material/group: **Población:** {int(muni['IDE_PoblacionTotal']):,}<br>"
@@ -41,14 +63,8 @@ def render_municipality_card(muni: pd.Series, images: Dict[str, Optional[Image.I
             unsafe_allow_html=True,
         )
 
-        if st.button("Ver detalles", key=f"details_btn_{muni['codigo']}"):
-            st.session_state["selected_municipality"] = muni
-            st.session_state["details_origin"] = "list"
-            st.session_state["suppress_map_selection"] = True
-            st.session_state["switch_view_to"] = ":material/list: Lista de municipios"
-            st.rerun()
-
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 def _render_pagination(current_page: int, num_pages: int, key_suffix: str) -> None:
@@ -90,6 +106,7 @@ def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.I
         return
 
     st.markdown("### :material/list: Municipios ordenados por puntuación")
+    st.markdown("Explora los municipios de la Comunidad de Madrid ordenados según tu perfil. La **puntuación** refleja qué tan bien se ajusta cada municipio a tus preferencias y prioridades.")
     st.markdown('<hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
 
 
@@ -113,9 +130,7 @@ def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.I
     end = start + page_size
     page_df = scores_df.iloc[start:end]
 
-    for _, row in page_df.iterrows():
-        render_municipality_card(row, images)
-        
+    for idx, row in page_df.iterrows():
         # Show details inline if this municipality is selected
         if ("selected_municipality" in st.session_state and 
             st.session_state.get("details_origin") == "list" and
@@ -124,6 +139,8 @@ def render_list_view(scores_df: pd.DataFrame, images: Dict[str, Optional[Image.I
             from ui.details_view import render_details
             render_details(st.session_state["selected_municipality"], images, scores_df)
             st.markdown('<hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #ddd;">', unsafe_allow_html=True)
+        else:
+            render_municipality_card(row, images, idx)
 
 
     # Bottom pagination

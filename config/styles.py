@@ -335,6 +335,41 @@ CSS_STYLES = """
     }
 }
 
+/* Demographics stacked bar */
+.demographics-bar {
+    display: flex;
+    height: 30px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.demographics-bar > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.demographics-bar > div:hover {
+    opacity: 0.85;
+}
+
+.demographics-legend {
+    font-size: 11px;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.demographics-legend span {
+    margin-right: 0.75rem;
+}
+
+
 </style>
 """
 
